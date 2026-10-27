@@ -1,0 +1,5 @@
+Classical ciphers were used by armies and diplomats for centuries.
+The Playfair cipher was invented by Charles Wheatstone in 1854,
+but it was named after Lord Lyon Playfair, who promoted its use.
+It encrypts pairs of letters, so single letter frequencies are hidden,
+yet a skilled analyst can still break it with enough ciphertext.

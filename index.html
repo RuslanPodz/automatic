@@ -1,0 +1,164 @@
+<!doctype html>
+<html lang="uk">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Біграмні шифри та Вернам — ЛР3</title>
+  <link rel="stylesheet" href="src/styles.css">
+</head>
+<body>
+  <a class="skip" href="#workspace">Перейти до роботи</a>
+
+  <header class="top">
+    <div class="wrap">
+      <p class="eyebrow">Програмні технології захисту інформації · Лабораторна робота 3</p>
+      <h1>Біграмні шифри та шифр Вернама</h1>
+      <p class="notice" role="note">
+        <strong>Навчальний застосунок.</strong> Playfair і двоквадратний шифр не дають реального захисту,
+        а XOR без автентифікації не захищає цілісність. Не вводьте паролі, токени чи персональні дані.
+      </p>
+    </div>
+  </header>
+
+  <main id="workspace" class="wrap">
+    <section class="card controls" aria-label="Вибір режиму">
+      <fieldset class="segmented">
+        <legend>Алгоритм</legend>
+        <label><input type="radio" name="algo" value="playfair" checked> Шифр Плейфера</label>
+        <label><input type="radio" name="algo" value="twosquare"> Двоквадратний шифр</label>
+        <label><input type="radio" name="algo" value="vernam"> Шифр Вернама</label>
+      </fieldset>
+      <fieldset class="segmented">
+        <legend>Операція</legend>
+        <label><input type="radio" name="op" value="encrypt" checked> Шифрувати</label>
+        <label><input type="radio" name="op" value="decrypt"> Розшифрувати</label>
+      </fieldset>
+    </section>
+
+    <div class="grid">
+      <!-- ===== Ліва колонка: введення ===== -->
+      <section class="card" aria-labelledby="input-title">
+        <h2 id="input-title">Вхідні дані</h2>
+
+        <div id="bigram-keys">
+          <div class="field">
+            <label for="key1" id="key1-label">Ключ квадрата</label>
+            <input id="key1" type="text" value="MONARCHY" autocomplete="off" spellcheck="false" aria-describedby="key-hint">
+          </div>
+          <div class="field" id="key2-field" hidden>
+            <label for="key2">Ключ правого квадрата</label>
+            <input id="key2" type="text" value="KEYWORD" autocomplete="off" spellcheck="false" aria-describedby="key-hint">
+          </div>
+          <p class="hint" id="key-hint">Латинські літери A–Z. J замінюється на I, повтори вилучаються.</p>
+        </div>
+
+        <div class="field">
+          <div class="label-row">
+            <label for="input" id="input-label">Відкритий текст</label>
+            <span class="meta" id="input-meta" aria-live="polite"></span>
+          </div>
+          <textarea id="input" rows="5" spellcheck="false">INSTRUMENTS</textarea>
+        </div>
+
+        <label class="check" id="lenient-field">
+          <input type="checkbox" id="lenient">
+          Зручний режим: вилучати пробіли, цифри й розділові знаки
+        </label>
+
+        <div id="vernam-key" hidden>
+          <div class="field">
+            <div class="label-row">
+              <label for="vkey">Ключ (Base64)</label>
+              <span class="meta" id="vkey-meta" aria-live="polite"></span>
+            </div>
+            <textarea id="vkey" rows="3" spellcheck="false" aria-describedby="vkey-hint"></textarea>
+            <p class="hint" id="vkey-hint">Під час шифрування порожнє поле заповнюється ключем із системного CSPRNG (crypto.getRandomValues).</p>
+          </div>
+          <div class="buttons">
+            <button type="button" id="gen-key" class="secondary">Згенерувати ключ</button>
+            <button type="button" id="import-key" class="secondary">Імпорт ключа .b64</button>
+          </div>
+        </div>
+
+        <div class="buttons">
+          <button type="button" id="run" class="primary">Шифрувати</button>
+          <button type="button" id="import-input" class="secondary">Імпорт файлу</button>
+          <button type="button" id="swap" class="ghost" title="Перенести результат у поле введення і змінити операцію">Результат → вхід</button>
+        </div>
+        <input type="file" id="file-input" accept=".txt,.b64,text/plain" hidden>
+
+        <div id="error" class="error" role="alert" aria-live="assertive"></div>
+      </section>
+
+      <!-- ===== Права колонка: результат ===== -->
+      <section class="card" aria-labelledby="output-title">
+        <h2 id="output-title">Результат</h2>
+
+        <div id="prepared-block" class="field" hidden>
+          <span class="label">Підготовлені біграми</span>
+          <output id="prepared" class="mono chips"></output>
+        </div>
+
+        <div class="field">
+          <div class="label-row">
+            <label for="output" id="output-label">Шифротекст</label>
+            <span class="meta" id="output-meta"></span>
+          </div>
+          <textarea id="output" rows="4" readonly spellcheck="false"></textarea>
+        </div>
+        <div class="buttons">
+          <button type="button" id="copy" class="secondary">Копіювати</button>
+          <button type="button" id="export" class="secondary">Експорт</button>
+          <button type="button" id="export-key" class="secondary" hidden>Експорт ключа</button>
+        </div>
+        <p id="status" class="status" role="status" aria-live="polite"></p>
+
+        <details id="bytes-block" hidden>
+          <summary>Байтове подання (HEX, для налагодження)</summary>
+          <dl class="hexdump mono" id="hexdump"></dl>
+        </details>
+      </section>
+    </div>
+
+    <!-- ===== Квадрати і кроки ===== -->
+    <section class="card" id="squares-card" aria-labelledby="squares-title">
+      <h2 id="squares-title">Ключові квадрати і кроки перетворення</h2>
+      <div class="squares" id="squares"></div>
+      <div class="legend" id="rule-legend">
+        <span><i class="sw sw-src"></i> вхідна біграма</span>
+        <span><i class="sw sw-dst"></i> результат</span>
+        <span>Наведіть курсор або перейдіть клавішею Tab на рядок таблиці, щоб підсвітити координати.</span>
+      </div>
+      <div class="table-wrap">
+        <table id="steps">
+          <caption class="sr">Кроки перетворення по біграмах</caption>
+          <thead><tr><th scope="col">№</th><th scope="col">Біграма</th><th scope="col">Правило</th><th scope="col">Результат</th></tr></thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- ===== Демонстрація повторного ключа ===== -->
+    <section class="card" aria-labelledby="reuse-title">
+      <details>
+        <summary><h2 id="reuse-title">Чому ключ Вернама не можна використовувати повторно</h2></summary>
+        <p>Два <em>не секретні</em> повідомлення однакової довжини шифруються одним випадковим ключем. Тоді
+          C1 ⊕ C2 = P1 ⊕ P2: ключ зникає з рівняння, і знання одного тексту розкриває інший.</p>
+        <div class="two">
+          <div class="field"><label for="p1">P1</label><input id="p1" type="text" value="ATTACK AT DAWN"></div>
+          <div class="field"><label for="p2">P2</label><input id="p2" type="text" value="RETREAT AT SIX"></div>
+        </div>
+        <button type="button" id="reuse-run" class="secondary">Показати</button>
+        <dl class="hexdump mono" id="reuse-out" aria-live="polite"></dl>
+      </details>
+    </section>
+  </main>
+
+  <footer class="wrap foot">
+    Алгоритмічна логіка — <code>src/cipherlab.js</code>, тести — <code>npm test</code>.
+  </footer>
+
+  <script src="src/cipherlab.js"></script>
+  <script src="src/app.js"></script>
+</body>
+</html>

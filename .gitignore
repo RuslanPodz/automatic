@@ -1,0 +1,7 @@
+node_modules/
+*.log
+.DS_Store
+# реальні ключі ніколи не комітимо; examples/demo_key.b64 - публічний демонстраційний
+*.key
+key.b64
+cipher.b64

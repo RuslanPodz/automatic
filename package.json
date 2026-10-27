@@ -1,0 +1,16 @@
+{
+  "name": "lab3-bigram-vernam",
+  "version": "1.0.0",
+  "description": "ЛР3: Playfair, двоквадратний біграмний шифр і шифр Вернама (навчальний веб-застосунок)",
+  "private": true,
+  "license": "UNLICENSED",
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "test": "node --test --test-reporter=spec",
+    "demo": "node examples/demo.js",
+    "experiment": "node examples/run-experiment.js",
+    "chacha": "node examples/chacha-demo.js"
+  }
+}

@@ -1,0 +1,52 @@
+{
+  "program": "lab3-bigram-vernam 1.0.0",
+  "node": "v22.23.4",
+  "runs": [
+    {
+      "mode": "Playfair",
+      "key": "PROTECTION",
+      "text": "english.txt",
+      "chars": 332,
+      "letters": 267,
+      "removed": 65,
+      "fillers": 5,
+      "bigrams": 136,
+      "unchangedBigrams": 0,
+      "cipherStart": "DV HY MA IB VD CR KT TM ZR OP LU PK",
+      "roundtrip": true
+    },
+    {
+      "mode": "Два квадрати",
+      "key": "CIPHER / BIGRAM",
+      "text": "english.txt",
+      "chars": 332,
+      "letters": 267,
+      "removed": 65,
+      "fillers": 5,
+      "bigrams": 136,
+      "unchangedBigrams": 11,
+      "cipherStart": "GG DQ QP BE KB BQ RD DO YA MD US GF",
+      "roundtrip": true
+    },
+    {
+      "mode": "Vernam",
+      "key": "ukrainian.key.b64",
+      "text": "ukrainian.txt",
+      "chars": 224,
+      "lines": 3,
+      "bytes": 411,
+      "cipherStart": "amhDq/YUlIitbBUwxcF+eLL6bWfoUUsQsiGSqVkGCZsA",
+      "roundtrip": true
+    },
+    {
+      "mode": "Vernam",
+      "key": "english.key.b64",
+      "text": "english.txt",
+      "chars": 332,
+      "lines": 5,
+      "bytes": 332,
+      "cipherStart": "bHCfEE5SjQxKsu6fl2czO9JGBWk+GcBO3m1Wx2Hd1rzX",
+      "roundtrip": true
+    }
+  ]
+}
